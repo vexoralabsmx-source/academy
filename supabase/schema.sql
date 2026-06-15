@@ -207,6 +207,26 @@ create table if not exists public.notes (
   updated_at timestamp with time zone default now()
 );
 
+create table if not exists public.course_access_keys (
+  id uuid primary key default gen_random_uuid(),
+  course_slug text not null,
+  code text unique not null,
+  is_active boolean default true,
+  max_redemptions integer default 1,
+  redemption_count integer default 0,
+  expires_at timestamp with time zone,
+  created_at timestamp with time zone default now()
+);
+
+create table if not exists public.user_course_access (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references public.profiles(id) on delete cascade,
+  course_slug text not null,
+  access_key_id uuid references public.course_access_keys(id) on delete set null,
+  granted_at timestamp with time zone default now(),
+  unique(user_id, course_slug)
+);
+
 create index if not exists courses_slug_idx on public.courses(slug);
 create index if not exists lessons_slug_idx on public.lessons(slug);
 create index if not exists profiles_username_idx on public.profiles(username);

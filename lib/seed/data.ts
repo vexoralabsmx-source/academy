@@ -96,7 +96,7 @@ function courseShell(
   difficulty: Course["difficulty"],
   description: string,
   icon: string
-) {
+): Omit<Course, "modules" | "lessonsCount" | "exercisesCount" | "xpTotal" | "isPublished"> {
   return {
     id: slug,
     title,
@@ -108,6 +108,7 @@ function courseShell(
     estimatedHours: difficulty === "Principiante" ? 8 : 14,
     gradient: "from-cyan/20 via-electric/20 to-violet/20",
     icon,
+    accessTier: difficulty === "Principiante" ? "free" : "premium",
     prerequisites: difficulty === "Principiante" ? ["No requiere experiencia previa"] : ["Fundamentos de programación", "Práctica con proyectos pequeños"],
     objectives: ["Entender conceptos clave", "Practicar con ejercicios", "Construir un entregable real"],
     finalProject: `Proyecto aplicado de ${title.toLowerCase()}`
@@ -222,6 +223,7 @@ function buildCompleteCourse(blueprint: CourseBlueprint): Course {
     estimatedHours: 10,
     gradient: "from-cyan/20 via-electric/20 to-violet/20",
     icon: blueprint.title.split(" ").map((word) => word[0]).join("").slice(0, 3).toUpperCase(),
+    accessTier: blueprint.difficulty === "Principiante" ? "free" : "premium",
     xpTotal: exercisesCount * 10,
     prerequisites: ["Ganas de practicar", "Computadora con navegador moderno"],
     objectives: ["Comprender fundamentos", "Resolver ejercicios", "Construir un mini proyecto", "Crear base para cursos avanzados"],
@@ -260,6 +262,7 @@ export const courses: Course[] = [
     ],
     lessonsCount: 7,
     exercisesCount: 14,
+    accessTier: course.accessTier,
     xpTotal: 140,
     isPublished: true
   }))

@@ -1,6 +1,7 @@
 import type { Exercise } from "./exercise";
 
 export type Difficulty = "Principiante" | "Intermedio" | "Avanzado";
+export type AccessTier = "free" | "premium";
 
 export type Course = {
   id: string;
@@ -13,6 +14,7 @@ export type Course = {
   estimatedHours: number;
   gradient: string;
   icon: string;
+  accessTier: AccessTier;
   xpTotal: number;
   prerequisites: string[];
   objectives: string[];

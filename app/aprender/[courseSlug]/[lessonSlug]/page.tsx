@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
+import { CourseAccessKeyForm } from "@/components/courses/CourseAccessKeyForm";
 import { ExerciseRenderer } from "@/components/exercises";
 import { LessonContent, LessonNavigation, LessonSidebar } from "@/components/lessons";
 import { Card, ProgressBar } from "@/components/ui";
+import { getCourseAccessStatus } from "@/lib/access/queries";
 import { getCurrentProfile, requireAuth } from "@/lib/auth/session";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { findLesson } from "@/lib/seed/data";
@@ -11,8 +13,23 @@ export default async function LearnPage({ params }: { params: { courseSlug: stri
   const profile = await getCurrentProfile();
   const { course, lesson } = findLesson(params.courseSlug, params.lessonSlug);
   if (!course || !lesson || !profile) notFound();
+  const access = await getCourseAccessStatus(course, profile);
   const dashboard = await getDashboardData(profile);
   const currentEnrollment = dashboard.activeCourses.find((item) => item.slug === course.slug);
+
+  if (course.accessTier === "premium" && !access.unlocked) {
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-16">
+        <Card>
+          <p className="text-sm font-semibold text-violet-300">Curso premium</p>
+          <h1 className="mt-2 text-3xl font-bold">{course.title}</h1>
+          <p className="mt-3 text-slate-400">Necesitas una llave valida para entrar a este curso. Cuando la compres por tu canal manual, ingresala aqui.</p>
+          <CourseAccessKeyForm courseSlug={course.slug} />
+          {!access.migrationReady ? <p className="mt-3 text-xs text-amber-300">Aplica primero la migracion SQL del sistema premium en Supabase.</p> : null}
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="flex">

@@ -10,6 +10,9 @@ export function CourseCard({ course, progress = 0 }: { course: Course; progress?
       <div className="flex flex-wrap gap-2">
         <Badge>{course.area}</Badge>
         <Badge>{course.difficulty}</Badge>
+        <Badge className={course.accessTier === "premium" ? "border-violet/25 bg-violet/10 text-violet-200" : "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"}>
+          {course.accessTier === "premium" ? "Premium" : "Gratis"}
+        </Badge>
       </div>
       <Link href={`/cursos/${course.slug}`} className="mt-4 text-xl font-bold transition group-hover:text-violet-300">
         {course.title}
@@ -23,7 +26,7 @@ export function CourseCard({ course, progress = 0 }: { course: Course; progress?
       <div className="mt-5">
         <ProgressBar value={progress} label={progress > 0 ? "Progreso" : undefined} />
       </div>
-      <Button href={`/cursos/${course.slug}`} className="mt-5">{progress > 0 ? "Continuar" : "Empezar"}</Button>
+      <Button href={`/cursos/${course.slug}`} className="mt-5">{progress > 0 ? "Continuar" : course.accessTier === "premium" ? "Ver acceso" : "Empezar"}</Button>
     </Card>
   );
 }
