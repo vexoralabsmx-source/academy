@@ -1,5 +1,5 @@
-import { courses } from "@/lib/seed/data";
 import { VexoraLogoIcon } from "@/components/brand";
+import type { AdminOverviewData } from "@/lib/admin/queries";
 
 function AdminStat({ label, value }: { label: string; value: string | number }) {
   return (
@@ -11,14 +11,14 @@ function AdminStat({ label, value }: { label: string; value: string | number }) 
   );
 }
 
-export function AdminStats() {
+export function AdminStats({ overview }: { overview: AdminOverviewData }) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-      <AdminStat label="Usuarios" value="1,284" />
-      <AdminStat label="Cursos publicados" value={courses.length} />
-      <AdminStat label="Lecciones" value="172" />
-      <AdminStat label="Ejercicios" value="348" />
-      <AdminStat label="XP entregado" value="92k" />
+      <AdminStat label="Usuarios" value={overview.totalUsers} />
+      <AdminStat label="Cursos publicados" value={overview.totalCourses} />
+      <AdminStat label="Lecciones" value={overview.totalLessons} />
+      <AdminStat label="Ejercicios" value={overview.totalExercises} />
+      <AdminStat label="XP entregado" value={overview.totalXpAwarded} />
     </div>
   );
 }

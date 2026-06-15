@@ -1,11 +1,11 @@
-import { leaderboard } from "@/lib/seed/data";
+import type { AdminUserRow } from "@/lib/admin/queries";
 import { AdminTable } from "./AdminTable";
 
-export function UserTable() {
+export function UserTable({ users }: { users: AdminUserRow[] }) {
   return (
     <AdminTable
       headers={["Usuario", "Nivel", "XP", "Racha", "Rol"]}
-      rows={leaderboard.map((user) => [user.username, user.level, user.xp, `${user.streak} días`, user.role])}
+      rows={users.map((user) => [user.username, user.level, user.xp, `${user.streak} días`, user.role])}
     />
   );
 }

@@ -1,7 +1,13 @@
 import { AppSidebar, PageHeader } from "@/components/layout";
-import { Button, Card, Input, Textarea } from "@/components/ui";
+import { ProfileSettingsForm } from "@/components/account/ProfileSettingsForm";
+import { Card } from "@/components/ui";
+import { getCurrentProfile, requireAuth } from "@/lib/auth/session";
 
-export default function SettingsPage() {
+export default async function SettingsPage() {
+  await requireAuth();
+  const profile = await getCurrentProfile();
+  if (!profile) return null;
+
   return (
     <div className="flex">
       <AppSidebar />
@@ -10,15 +16,7 @@ export default function SettingsPage() {
         <section className="mx-auto grid max-w-4xl gap-6 px-4 pb-20 sm:px-6 lg:px-8">
           <Card>
             <h2 className="text-xl font-bold">Perfil</h2>
-            <div className="mt-5 grid gap-3">
-              <Input placeholder="Username" />
-              <Textarea placeholder="Bio" />
-              <Input placeholder="Avatar URL" />
-              <Input placeholder="Website" />
-              <Input placeholder="GitHub" />
-              <Input placeholder="LinkedIn" />
-              <Button>Guardar cambios</Button>
-            </div>
+            <div className="mt-5"><ProfileSettingsForm profile={profile} /></div>
           </Card>
           <Card>
             <h2 className="text-xl font-bold">Preferencias</h2>

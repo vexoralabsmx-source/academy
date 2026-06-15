@@ -1,6 +1,7 @@
 import { AppSidebar, PageHeader, SectionHeader } from "@/components/layout";
+import { ProfileSettingsForm } from "@/components/account/ProfileSettingsForm";
 import { AchievementGrid, ActivityFeed, LevelProgress } from "@/components/dashboard";
-import { Avatar, Badge, Card, Input, Textarea } from "@/components/ui";
+import { Avatar, Badge, Card } from "@/components/ui";
 import { getDashboardData } from "@/lib/dashboard/queries";
 import { getCurrentProfile, requireAuth } from "@/lib/auth/session";
 
@@ -25,13 +26,7 @@ export default async function ProfilePage() {
           <div className="space-y-6">
             <Card>
               <SectionHeader title="Editar perfil" />
-              <div className="grid gap-3">
-                <Input defaultValue={profile.username ?? ""} placeholder="Username" />
-                <Textarea defaultValue={profile.bio ?? ""} placeholder="Bio" />
-                <Input defaultValue={profile.github_url ?? ""} placeholder="GitHub" />
-                <Input defaultValue={profile.website_url ?? ""} placeholder="Portfolio" />
-                <Input defaultValue={profile.linkedin_url ?? ""} placeholder="LinkedIn" />
-              </div>
+              <ProfileSettingsForm profile={profile} />
             </Card>
             <Card><SectionHeader title="Logros" /><AchievementGrid achievements={dashboard.achievements} /></Card>
             <Card><SectionHeader title="Actividad" /><ActivityFeed items={dashboard.activity} /></Card>
