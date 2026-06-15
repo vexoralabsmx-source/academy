@@ -1,5 +1,8 @@
-export function ActivityFeed() {
-  const items = ["Completaste HTML semántico", "Ganaste 10 XP en JavaScript", "Iniciaste Data Analyst", "Subiste al nivel 8"];
+export function ActivityFeed({ items }: { items: string[] }) {
+  if (items.length === 0) {
+    return <p className="text-sm text-slate-400">Aun no hay actividad reciente. Empieza una leccion para generar progreso real.</p>;
+  }
+
   return (
     <div className="space-y-3">
       {items.map((item) => (

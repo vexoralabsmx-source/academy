@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { VexoraLogoIcon } from "@/components/brand";
+import type { RecommendedLessonItem } from "@/lib/dashboard/queries";
 
-const lessons = [
-  { title: "Funciones", href: "/aprender/javascript-practico/funciones" },
-  { title: "Grid", href: "/aprender/css-moderno/grid" },
-  { title: "GROUP BY", href: "/aprender/sql-desde-cero/group-by" }
-];
-
-export function RecommendedLessons() {
+export function RecommendedLessons({ lessons }: { lessons: RecommendedLessonItem[] }) {
   return (
     <div className="space-y-2">
       {lessons.map((lesson) => (
