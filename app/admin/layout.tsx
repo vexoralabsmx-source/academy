@@ -1,6 +1,9 @@
+import { requireAdmin } from "@/lib/auth/session";
 import { AdminSidebar } from "@/components/layout";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  await requireAdmin();
+
   return (
     <div className="flex">
       <AdminSidebar />

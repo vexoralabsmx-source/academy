@@ -35,7 +35,9 @@ export function AuthForm({ mode }: { mode: "login" | "register" }) {
       router.refresh();
     } catch {
       setLoading(false);
-      setMessage("No se pudo inicializar la autenticacion. Reinicia el servidor y verifica las variables NEXT_PUBLIC de Supabase.");
+      setMessage(
+        "No se pudo inicializar la autenticacion. Reinicia el servidor y verifica NEXT_PUBLIC_SUPABASE_URL y NEXT_PUBLIC_SUPABASE_ANON_KEY."
+      );
     }
   }
 
