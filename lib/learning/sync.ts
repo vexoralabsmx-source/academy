@@ -40,10 +40,10 @@ export async function ensureSeedCourseSynced(
     let matchedLessonId: string | undefined;
     let matchedExerciseId: string | undefined;
 
-    for (const module of course.modules) {
-      const moduleId = await upsertModule(supabase, courseId, module, existingModules);
+    for (const moduleData of course.modules) {
+      const moduleId = await upsertModule(supabase, courseId, moduleData, existingModules);
 
-      for (const lesson of module.lessons) {
+      for (const lesson of moduleData.lessons) {
         const lessonId = await upsertLesson(supabase, courseId, moduleId, lesson);
         if (options?.lessonSlug === lesson.slug) {
           matchedLessonId = lessonId;
