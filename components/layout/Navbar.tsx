@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Menu } from "lucide-react";
-import { getCurrentProfile } from "@/lib/auth/session";
+import { getCurrentProfile, signOut } from "@/lib/auth/session";
 import { navItems } from "@/lib/constants/site";
 import { VexoraLogoIcon } from "@/components/brand";
 import { Button } from "@/components/ui";
@@ -33,6 +33,9 @@ export async function Navbar() {
             <>
               <Button href="/dashboard" variant="ghost" size="sm">Dashboard</Button>
               {isAdmin ? <Button href="/admin" variant="secondary" size="sm">Admin</Button> : null}
+              <form action={signOut}>
+                <Button variant="ghost" size="sm" type="submit">Cerrar sesión</Button>
+              </form>
             </>
           ) : (
             <>

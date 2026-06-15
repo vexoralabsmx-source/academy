@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import type { Profile } from "@/types/user";
 
@@ -35,4 +36,13 @@ export async function requireAdmin() {
   if (!profile) redirect("/login");
   if (profile.role !== "admin") redirect("/dashboard");
   return profile;
+}
+
+export async function signOut() {
+  "use server";
+
+  const supabase = createClient();
+  await supabase.auth.signOut();
+  revalidatePath("/");
+  redirect("/login");
 }
