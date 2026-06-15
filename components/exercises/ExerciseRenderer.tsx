@@ -1,19 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useTransition, useState } from "react";
 import type { Exercise } from "@/types/exercise";
-import { gradeExercise } from "@/lib/grading";
+import { submitExerciseAttempt } from "@/lib/learning/actions";
 import { Button, Card, Textarea, Toast } from "@/components/ui";
 
-export function ExerciseRenderer({ exercise }: { exercise: Exercise }) {
+export function ExerciseRenderer({
+  exercise,
+  courseSlug,
+  lessonSlug
+}: {
+  exercise: Exercise;
+  courseSlug: string;
+  lessonSlug: string;
+}) {
   const [answer, setAnswer] = useState("");
   const [attempts, setAttempts] = useState(1);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
 
   function submit() {
-    const result = gradeExercise(exercise, answer, attempts);
-    setFeedback(result.feedback);
-    setAttempts((current) => current + 1);
+    startTransition(async () => {
+      const result = await submitExerciseAttempt({ exercise, answer, attempts, courseSlug, lessonSlug });
+      setFeedback(result.feedback);
+      setAttempts((current) => current + 1);
+    });
   }
 
   return (
@@ -38,7 +49,7 @@ export function ExerciseRenderer({ exercise }: { exercise: Exercise }) {
         <Textarea value={answer} onChange={(event) => setAnswer(event.target.value)} className="mt-4" placeholder="Escribe tu respuesta..." />
       )}
       <div className="mt-5 flex flex-wrap items-center gap-3">
-        <Button onClick={submit}>Calificar</Button>
+        <Button onClick={submit} disabled={isPending || !answer.trim()}>{isPending ? "Guardando..." : "Calificar"}</Button>
         <p className="text-sm text-slate-500">{exercise.hint}</p>
       </div>
       {feedback ? <div className="mt-4"><Toast message={feedback} /></div> : null}
