@@ -6,10 +6,12 @@ import { Card, ProgressBar } from "@/components/ui";
 import { getCourseAccessStatus } from "@/lib/access/queries";
 import { getCurrentProfile, requireAuth } from "@/lib/auth/session";
 import { getDashboardData } from "@/lib/dashboard/queries";
+import { ensureSeedCourseSynced } from "@/lib/learning/sync";
 import { findLesson } from "@/lib/seed/data";
 
 export default async function LearnPage({ params }: { params: { courseSlug: string; lessonSlug: string } }) {
   await requireAuth();
+  await ensureSeedCourseSynced(params.courseSlug);
   const profile = await getCurrentProfile();
   const { course, lesson } = findLesson(params.courseSlug, params.lessonSlug);
   if (!course || !lesson || !profile) notFound();

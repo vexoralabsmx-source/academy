@@ -6,10 +6,12 @@ import { Badge, Button, Card } from "@/components/ui";
 import { LessonList, ModuleAccordion } from "@/components/courses";
 import { PageHeader } from "@/components/layout";
 import { findCourse } from "@/lib/seed/data";
+import { ensureSeedCourseSynced } from "@/lib/learning/sync";
 
 export default async function CourseDetailPage({ params }: { params: { slug: string } }) {
   const course = findCourse(params.slug);
   if (!course) notFound();
+  await ensureSeedCourseSynced(params.slug);
   const profile = await getCurrentProfile();
   const access = await getCourseAccessStatus(course, profile);
   const firstLesson = course.modules[0]?.lessons[0];

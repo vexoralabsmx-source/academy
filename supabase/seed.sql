@@ -27,6 +27,14 @@ declare
   lesson_index integer;
 begin
   for course_record in select id, title, slug from public.courses where slug in ('html-desde-cero', 'css-moderno', 'javascript-practico', 'sql-desde-cero', 'ia-aplicada') loop
+    delete from public.exercises ex
+    where ex.lesson_id in (
+      select l.id from public.lessons l where l.course_id = course_record.id
+    );
+
+    delete from public.lessons where course_id = course_record.id;
+    delete from public.modules where course_id = course_record.id;
+
     for module_index in 1..3 loop
       insert into public.modules (course_id, title, description, order_index)
       values (course_record.id, module_titles[module_index] || ' de ' || course_record.title, 'Bloque práctico con objetivos claros.', module_index)

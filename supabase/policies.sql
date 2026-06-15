@@ -14,8 +14,6 @@ alter table public.certificates enable row level security;
 alter table public.weekly_challenges enable row level security;
 alter table public.challenge_submissions enable row level security;
 alter table public.notes enable row level security;
-alter table public.course_access_keys enable row level security;
-alter table public.user_course_access enable row level security;
 
 create or replace function public.is_admin(user_id uuid default auth.uid())
 returns boolean
@@ -94,14 +92,24 @@ create policy "users manage own challenge submissions" on public.challenge_submi
 
 drop policy if exists "users manage own notes" on public.notes;
 create policy "users manage own notes" on public.notes for all using (auth.uid() = user_id or public.is_admin()) with check (auth.uid() = user_id or public.is_admin());
-create policy "users read own course access" on public.user_course_access for select using (auth.uid() = user_id or public.is_admin());
-create policy "users insert own course access" on public.user_course_access for insert with check (auth.uid() = user_id or public.is_admin());
-create policy "admin manage course access keys" on public.course_access_keys for all using (public.is_admin()) with check (public.is_admin());
 
+drop policy if exists "admin manage profiles" on public.profiles;
 create policy "admin manage profiles" on public.profiles for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage courses" on public.courses;
 create policy "admin manage courses" on public.courses for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage modules" on public.modules;
 create policy "admin manage modules" on public.modules for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage lessons" on public.lessons;
 create policy "admin manage lessons" on public.lessons for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage exercises" on public.exercises;
 create policy "admin manage exercises" on public.exercises for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage submissions" on public.submissions;
 create policy "admin manage submissions" on public.submissions for all using (public.is_admin()) with check (public.is_admin());
+
+drop policy if exists "admin manage paths" on public.learning_paths;
 create policy "admin manage paths" on public.learning_paths for all using (public.is_admin()) with check (public.is_admin());

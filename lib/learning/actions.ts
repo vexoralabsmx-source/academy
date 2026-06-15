@@ -1,8 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { gradeExercise } from "@/lib/grading";
+import { ensureSeedCourseSynced } from "@/lib/learning/sync";
 import { findCourse } from "@/lib/seed/data";
 import type { Exercise } from "@/types/exercise";
 
@@ -28,28 +30,40 @@ export async function submitExerciseAttempt(input: {
     return { ok: false as const, feedback: "No se encontro la leccion asociada al ejercicio." };
   }
 
-  const resolved = await resolveCourseAndLesson(input.courseSlug, input.lessonSlug);
-  if (!resolved) {
-    return { ok: false as const, feedback: "La leccion no esta sincronizada con Supabase todavia." };
+  const syncResult = await ensureSeedCourseSynced(input.courseSlug, {
+    lessonSlug: input.lessonSlug,
+    exerciseTitle: input.exercise.title
+  });
+  if (!syncResult.ok) {
+    return { ok: false as const, feedback: syncResult.message };
   }
 
-  const { data: exerciseRow } = await supabase
-    .from("exercises")
-    .select("id")
-    .eq("title", input.exercise.title)
-    .eq("course_id", resolved.courseId)
-    .eq("lesson_id", resolved.lessonId)
-    .single();
+  if (!syncResult.lessonId) {
+    return { ok: false as const, feedback: "No se pudo resolver la leccion sincronizada." };
+  }
 
-  if (!exerciseRow) {
-    return { ok: false as const, feedback: "El ejercicio no existe en la base de datos todavia." };
+  const adminSupabase = createAdminClient();
+  const exerciseId =
+    syncResult.exerciseId ??
+    (
+      await adminSupabase
+        .from("exercises")
+        .select("id")
+        .eq("title", input.exercise.title)
+        .eq("course_id", syncResult.courseId)
+        .eq("lesson_id", syncResult.lessonId)
+        .limit(1)
+    ).data?.[0]?.id;
+
+  if (!exerciseId) {
+    return { ok: false as const, feedback: "No se pudo resolver el ejercicio sincronizado." };
   }
 
   const { data: previousCorrect } = await supabase
     .from("submissions")
     .select("id")
     .eq("user_id", user.id)
-    .eq("exercise_id", exerciseRow.id)
+    .eq("exercise_id", exerciseId)
     .eq("is_correct", true)
     .maybeSingle();
 
@@ -57,9 +71,9 @@ export async function submitExerciseAttempt(input: {
 
   const { error } = await supabase.from("submissions").insert({
     user_id: user.id,
-    exercise_id: exerciseRow.id,
-    course_id: resolved.courseId,
-    lesson_id: resolved.lessonId,
+    exercise_id: exerciseId,
+    course_id: syncResult.courseId,
+    lesson_id: syncResult.lessonId,
     answer: { value: input.answer },
     score: result.score,
     feedback: result.feedback,
@@ -73,8 +87,8 @@ export async function submitExerciseAttempt(input: {
     return { ok: false as const, feedback: error.message };
   }
 
-  await ensureEnrollment(user.id, resolved.courseId);
-  await syncEnrollmentProgress(user.id, resolved.courseId);
+  await ensureEnrollment(user.id, syncResult.courseId);
+  await syncEnrollmentProgress(user.id, syncResult.courseId);
 
   revalidatePath("/dashboard");
   revalidatePath("/perfil");
@@ -99,16 +113,20 @@ export async function markLessonCompleted(input: { courseSlug: string; lessonSlu
     return { ok: false as const, message: "No se encontro la leccion." };
   }
 
-  const resolved = await resolveCourseAndLesson(input.courseSlug, input.lessonSlug);
-  if (!resolved) {
-    return { ok: false as const, message: "La leccion no esta sincronizada con Supabase todavia." };
+  const syncResult = await ensureSeedCourseSynced(input.courseSlug, { lessonSlug: input.lessonSlug });
+  if (!syncResult.ok) {
+    return { ok: false as const, message: syncResult.message };
+  }
+
+  if (!syncResult.lessonId) {
+    return { ok: false as const, message: "No se pudo resolver la leccion sincronizada." };
   }
 
   const { error } = await supabase.from("progress").upsert(
     {
       user_id: user.id,
-      course_id: resolved.courseId,
-      lesson_id: resolved.lessonId,
+      course_id: syncResult.courseId,
+      lesson_id: syncResult.lessonId,
       completed: true,
       completed_at: new Date().toISOString()
     },
@@ -119,8 +137,8 @@ export async function markLessonCompleted(input: { courseSlug: string; lessonSlu
     return { ok: false as const, message: error.message };
   }
 
-  await ensureEnrollment(user.id, resolved.courseId);
-  await syncEnrollmentProgress(user.id, resolved.courseId);
+  await ensureEnrollment(user.id, syncResult.courseId);
+  await syncEnrollmentProgress(user.id, syncResult.courseId);
 
   revalidatePath("/dashboard");
   revalidatePath("/perfil");
@@ -175,21 +193,4 @@ async function syncEnrollmentProgress(userId: string, courseId: string) {
     })
     .eq("user_id", userId)
     .eq("course_id", courseId);
-}
-
-async function resolveCourseAndLesson(courseSlug: string, lessonSlug: string) {
-  const supabase = createClient();
-  const { data: courseRow } = await supabase.from("courses").select("id").eq("slug", courseSlug).single();
-  if (!courseRow) return null;
-
-  const { data: lessonRow } = await supabase
-    .from("lessons")
-    .select("id")
-    .eq("course_id", courseRow.id)
-    .eq("slug", lessonSlug)
-    .single();
-
-  if (!lessonRow) return null;
-
-  return { courseId: courseRow.id, lessonId: lessonRow.id };
 }
